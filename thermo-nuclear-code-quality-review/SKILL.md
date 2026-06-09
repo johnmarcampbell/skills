@@ -1,7 +1,15 @@
 ---
 name: thermo-nuclear-code-quality-review
-description: Run an extremely strict maintainability review for abstraction quality, giant files, and spaghetti-condition growth. Works in two modes: (1) PR/diff mode — review the current branch's changes; (2) codebase audit mode — find refactoring opportunities across a whole codebase or directory without a specific PR. Use for a thermo-nuclear code quality review, thermonuclear review, deep code quality audit, especially harsh maintainability review, find refactoring opportunities, or codebase health check.
-disable-model-invocation: true
+description: >
+   Run an extremely strict maintainability review for abstraction quality, 
+   giant files, and spaghetti-condition growth.
+   Works in two modes: (1) PR/diff mode — review the current branch's changes; 
+   (2) codebase audit mode — find refactoring opportunities across a whole 
+   codebase or directory without a specific PR.
+   Use for a thermo-nuclear code quality review, thermonuclear review, deep 
+   code quality audit, especially harsh maintainability review, find 
+   refactoring opportunities, or codebase health check.
+
 ---
 
 # Thermo-Nuclear Code Quality Review
