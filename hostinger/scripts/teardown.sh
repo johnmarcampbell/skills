@@ -85,7 +85,8 @@ cat <<EOF
 Not touched - do these yourself if wanted (irreversible):
   rm ~/.ssh/${APP}_deploy ~/.ssh/${APP}_deploy.pub
   gh repo archive ${GH_OWNER:-<owner>}/$APP        # or: gh repo delete ${GH_OWNER:-<owner>}/$APP
-  GHCR package: https://github.com/users/${GH_OWNER:-<owner>}/packages/container/$APP/settings
+  gh api -X DELETE /user/packages/container/$APP   # GHCR package (repo deletion does not remove it)
+  # both gh commands need: gh auth refresh -h github.com -s delete_repo,read:packages,delete:packages
   Update ~/.hostinger/notes.md
 EOF
 (( APPLY )) || echo "Dry run. Re-run with --apply."

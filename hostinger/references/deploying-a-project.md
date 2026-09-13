@@ -118,5 +118,7 @@ authoritative nameservers (`dig +short NS $APP_DOMAIN`, then `dig +short <app>.$
 
 Irreversible leftovers the script only prints - ask before doing any: delete the local key
 (`~/.ssh/<app>_deploy*`), archive or delete the GitHub repo, delete the GHCR package (GitHub UI, or
-`gh api -X DELETE /user/packages/container/<app>` with a token that has `delete:packages`).
+`gh api -X DELETE /user/packages/container/<app>`). Both need scopes `gh` lacks by default - the user
+runs `gh auth refresh -h github.com -s delete_repo,read:packages,delete:packages` (browser flow), then
+confirm with `gh auth status`. Deleting the repo does not delete its package; delete both.
 Update `~/.hostinger/notes.md`.
