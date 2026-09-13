@@ -1,0 +1,44 @@
+# {{APP}} on a Hostinger Docker VPS. Generated from the `hostinger` skill template.
+#
+# Layout on the VPS (a Hostinger Docker Manager project):
+#   /docker/{{APP}}/          <- this repo's deploy/ dir, rsynced by .github/workflows/deploy.yml
+#   /docker/{{APP}}/data/     <- persistent state (bind mount, covered by VPS backups) - never in git
+#   /docker/{{APP}}/.env      <- IMAGE_TAG=... (written by scripts/deploy.sh) + runtime secrets
+#
+# Everything the VPS needs to know is committed here - don't edit this file in the Docker
+# Manager GUI, the next deploy overwrites it.
+
+name: {{APP}}
+
+services:
+  {{APP}}:
+    image: ghcr.io/{{GH_OWNER}}/{{APP}}:${IMAGE_TAG:-{{BRANCH}}}
+    container_name: {{APP}}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_DIR: /data
+#>>> ingress
+      PORT: "{{PORT}}"
+    # Ingress: the VPS's shared Traefik is host-networked and discovers containers by
+    # label, routing straight to their bridge IPs. So: no `networks:` block, and no
+    # public port.
+    # One router per hostname: Traefik requests ONE certificate per router covering every
+    # Host() in its rule, so a hostname whose DNS doesn't resolve yet would block the
+    # certificate for all of them.
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.{{APP}}.loadbalancer.server.port={{PORT}}
+{{ROUTER_LABELS}}
+    ports:
+      # Loopback only: deploy health checks + `ssh -L {{HOST_PORT}}:127.0.0.1:{{HOST_PORT}}` admin.
+      # Must be unique across all projects on the VPS (see the skill's scripts/vps-audit.sh).
+      - "127.0.0.1:{{HOST_PORT}}:{{PORT}}"
+#<<< ingress
+    volumes:
+      - ./data:/data
+    stop_grace_period: 30s
+    mem_limit: {{MEM_LIMIT}}
