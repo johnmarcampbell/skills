@@ -42,6 +42,11 @@ echo "==> Waiting for ${HEALTH_URL:-container {{APP}} to be running/healthy}"
 for i in $(seq 1 30); do
   if healthy; then
     echo "==> Healthy after ${i} checks"
+    # Each deploy adds a new <branch>-<sha> tag, which `image prune` never removes (only
+    # dangling images). Drop every other tag of this image so old versions don't pile up.
+    docker images ghcr.io/{{GH_OWNER}}/{{APP}} --format '{{.Repository}}:{{.Tag}}' \
+      | grep -vxF -e "ghcr.io/{{GH_OWNER}}/{{APP}}:${IMAGE_TAG}" -e "ghcr.io/{{GH_OWNER}}/{{APP}}:{{BRANCH}}" \
+      | xargs -r docker rmi >/dev/null 2>&1 || true
     docker image prune -f >/dev/null
     exit 0
   fi

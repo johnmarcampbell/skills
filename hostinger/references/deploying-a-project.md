@@ -97,8 +97,26 @@ this flow: scaffold into the repo, port over its real env vars/volume paths (che
 e.g. data may mount at `/app/data`, not `/data`), keep the same app name so `/docker/<app>/data` and
 `.env` are reused, and confirm with the user before the first deploy replaces the live compose file.
 
-## Retiring a project
+## Tearing a project down
 
-Confirm with the user first - this deletes production state. `cd /docker/<app> && docker compose down`,
-then decide explicitly about `data/` (archive before deleting), remove the deploy key line from
-`authorized_keys`, delete the repo secrets/workflow, and remove the DNS record.
+Confirm scope with the user first. Then:
+
+```bash
+~/.claude/skills/hostinger/scripts/teardown.sh <app>            # dry run: shows what exists and what would go
+~/.claude/skills/hostinger/scripts/teardown.sh <app> --apply
+```
+
+It stops the stack, removes every tag of the app's image (`compose down --rmi` only removes the
+current one), archives `/docker/<app>` - including `data/` and `.env` secrets - to
+`/root/teardown-archives/<app>-<stamp>.tgz` (`--no-archive` to skip; delete old archives when no longer
+wanted), deletes the CNAME if it points at the VPS (`--keep-dns` to skip), and removes the deploy key
+from `authorized_keys` (backup kept beside it).
+
+Expect the hostname to keep resolving on public resolvers until the record's TTL expires; check the
+authoritative nameservers (`dig +short NS $APP_DOMAIN`, then `dig +short <app>.$APP_DOMAIN @<ns>`).
+`<app>.$VPS_HOST` keeps resolving forever (wildcard) and returns Traefik's 404.
+
+Irreversible leftovers the script only prints - ask before doing any: delete the local key
+(`~/.ssh/<app>_deploy*`), archive or delete the GitHub repo, delete the GHCR package (GitHub UI, or
+`gh api -X DELETE /user/packages/container/<app>` with a token that has `delete:packages`).
+Update `~/.hostinger/notes.md`.

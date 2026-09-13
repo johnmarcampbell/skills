@@ -26,7 +26,7 @@ If the config is missing, copy `config.example.env` there and fill it in with th
 
 | Task | Read |
 |---|---|
-| Deploy a new GitHub project to the VPS / add deploy-on-merge to an existing one | [references/deploying-a-project.md](references/deploying-a-project.md) |
+| Deploy a new GitHub project to the VPS / add deploy-on-merge to an existing one / tear one down | [references/deploying-a-project.md](references/deploying-a-project.md) |
 | Understand how the VPS, Docker Manager and Traefik fit together; certificates; conventions | [references/vps-and-traefik.md](references/vps-and-traefik.md) |
 | Something is broken (404, bad cert, deploy fails, container unhealthy) | [references/troubleshooting.md](references/troubleshooting.md) |
 | Automate DNS records or Docker Manager via the Hostinger API / CLI / MCP | [references/hostinger-api.md](references/hostinger-api.md) |
@@ -40,4 +40,5 @@ All read `config.env`. Run from anywhere.
 | `scripts/vps-audit.sh` | Projects, routed hostnames (flags duplicates), published ports (flags public ones), networks, memory | none (read-only) |
 | `scripts/scaffold.sh <repo> --app N --port P --host-port H` / `--no-ingress` | Renders `templates/` into a repo: `deploy/docker-compose.yml`, `deploy/scripts/deploy.sh`, `.github/workflows/deploy.yml`. Never overwrites | writes files in the repo |
 | `scripts/dns-cname.sh <name> [--dry-run]` | Creates/updates CNAME `<name>.$APP_DOMAIN` -> `$VPS_HOST` via the API (only that record), waits for public resolution | DNS zone |
+| `scripts/teardown.sh <app> [--apply]` | Dry run by default. `down` + remove all the app's images, archive `/docker/<app>` to `/root/teardown-archives/`, delete its CNAME (only if it points at the VPS), revoke its deploy key. Prints the irreversible GitHub steps instead of doing them | VPS project + images, DNS, `authorized_keys` |
 | `scripts/setup-deploy-access.sh <app> <owner/repo>` | Generates `~/.ssh/<app>_deploy`, authorizes it on the VPS, sets the 4 repo secrets | VPS `authorized_keys`, GitHub secrets |
